@@ -21,8 +21,8 @@ $ npx @stoe/action-permissions-cli [--options]
 
 ## Additional options
 
-- `--csv` Path to CSV file for the output (e.g. `/path/to/action-uses.csv`)
-- `--md` Path to markdown file for the output (e.g. `/path/to/action-uses.md`)
+- `--csv` Path to CSV file for the output (e.g. `/path/to/action-permissions.csv`)
+- `--md` Path to markdown file for the output (e.g. `/path/to/action-permissions.md`)
 - `--token`, `-t` GitHub Personal Access Token (PAT) (default `GITHUB_TOKEN`)
 - `--help`, `-h` Print action-permissions-cli help
 - `--version`, `-v` Print action-permissions-cli version
@@ -42,11 +42,11 @@ $ action-permissions-cli -o stoe
 # Output GitHub Actions `uses` for the stoe/action-permissions-cli repository to stdout
 $ action-permissions-cli -o stoe/action-permissions-cli
 
-# Output GitHub Actions `uses` for all organization repositories to /path/to/action-uses.csv
-$ action-permissions-cli -o my-org --csv /path/to/action-uses.csv
+# Output GitHub Actions `uses` for all organization repositories to /path/to/action-permissions.csv
+$ action-permissions-cli -o my-org --csv /path/to/action-permissions.csv
 
-# Output GitHub Actions `uses` for all organization repositories to /path/to/action-uses.md
-$ action-permissions-cli -o my-org --md /path/to/action-uses.md
+# Output GitHub Actions `uses` for all organization repositories to /path/to/action-permissions.md
+$ action-permissions-cli -o my-org --md /path/to/action-permissions.md
 ```
 
 ## License
