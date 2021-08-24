@@ -3,7 +3,7 @@ name: codeql
 on:
   pull_request:
     paths:
-      - '*/*.js'
+      - '*/*.mjs'
       - '.github/workflows/codeql.yml'
 
 jobs:
