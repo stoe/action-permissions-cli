@@ -41,7 +41,7 @@ const cli = meow(
     $ action-permissions-cli -o stoe
 
     ${dim('# Output GitHub Actions `permissions` for the stoe/action-permissions-cli repository to stdout')}
-    $ action-permissions-cli -o stoe/action-permissions-cli
+    $ action-permissions-cli -r stoe/action-permissions-cli
 
     ${dim('# Output GitHub Actions `permissions` for all organization repositories to /path/to/action-permissions.csv')}
     $ action-permissions-cli -o my-org --csv /path/to/action-permissions.csv

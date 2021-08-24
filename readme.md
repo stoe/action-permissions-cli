@@ -30,23 +30,23 @@ $ npx @stoe/action-permissions-cli [--options]
 ## Examples
 
 ```sh
-# Output GitHub Actions `uses` for all repositories under a GitHub Enterprise Cloud account to stdout
-$ action-permissions-cli -e my-enterprise
+# Output GitHub Actions `permissions` for all repositories under a GitHub Enterprise Cloud account to stdout
+$ npx @stoe/action-permissions-cli -e my-enterprise
 
-# Output GitHub Actions `uses` for all organization repositories to stdout
-$ action-permissions-cli -o my-org
+# Output GitHub Actions `permissions` for all organization repositories to stdout
+$ npx @stoe/action-permissions-cli -o my-org
 
-# Output GitHub Actions `uses` for all user repositories to stdout
-$ action-permissions-cli -o stoe
+# Output GitHub Actions `permissions` for all user repositories to stdout
+$ npx @stoe/action-permissions-cli -o stoe
 
-# Output GitHub Actions `uses` for the stoe/action-permissions-cli repository to stdout
-$ action-permissions-cli -o stoe/action-permissions-cli
+# Output GitHub Actions `permissions` for the stoe/action-permissions-cli repository to stdout
+$ npx @stoe/action-permissions-cli -r stoe/action-permissions-cli
 
-# Output GitHub Actions `uses` for all organization repositories to /path/to/action-permissions.csv
-$ action-permissions-cli -o my-org --csv /path/to/action-permissions.csv
+# Output GitHub Actions `permissions` for all organization repositories to /path/to/action-permissions.csv
+$ npx @stoe/action-permissions-cli -o my-org --csv /path/to/action-permissions.csv
 
-# Output GitHub Actions `uses` for all organization repositories to /path/to/action-permissions.md
-$ action-permissions-cli -o my-org --md /path/to/action-permissions.md
+# Output GitHub Actions `permissions` for all organization repositories to /path/to/action-permissions.md
+$ npx @stoe/action-permissions-cli -o my-org --md /path/to/action-permissions.md
 ```
 
 ## License
