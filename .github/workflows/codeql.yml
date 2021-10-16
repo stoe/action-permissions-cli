@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+permissions:
+  actions: read
+  security-events: write
+
 jobs:
   codeql:
     uses: stoe/policies/.github/workflows/policy-node-codeql.yml@main
