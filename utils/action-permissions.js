@@ -2,7 +2,8 @@ import {Octokit} from '@octokit/core'
 import chalk from 'chalk'
 import {load} from 'js-yaml'
 import {paginateRest} from '@octokit/plugin-paginate-rest'
-import {stringify} from 'csv-stringify'
+// eslint-disable-next-line import/no-unresolved
+import {stringify} from 'csv-stringify/sync'
 import {throttling} from '@octokit/plugin-throttling'
 // eslint-disable-next-line import/extensions
 import wait from './wait.js'
