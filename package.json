@@ -1,6 +1,6 @@
 {
   "name": "@stoe/action-permissions-cli",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "description": "CLI to grab GitHub Action `permissions`",
   "keywords": [
@@ -15,14 +15,17 @@
   "license": "MIT",
   "repository": "github:stoe/action-permissions-cli",
   "engines": {
-    "node": ">=14",
-    "npm": ">=7"
+    "node": ">=16",
+    "npm": ">=8"
   },
   "bin": {
     "action-permissions-cli": "./index.js"
   },
-  "directories": {
-    "lib": "utils"
+  "exports": {
+    ".": "./utils/action-permissions.js",
+    "./utils": "./utils/action-permissions.js",
+    "./utils/*": "./utils/*.js",
+    "./package.json": "./package.json"
   },
   "files": [
     "utils/",
@@ -30,7 +33,6 @@
     "license",
     "readme.md"
   ],
-  "exports": "./utils/action-permissions.js",
   "scripts": {
     "format": "npx prettier --config-precedence prefer-file --write . && eslint . --fix",
     "prepare": "husky install ./.github/husky",
