@@ -1,6 +1,6 @@
 {
   "name": "@stoe/action-permissions-cli",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "type": "module",
   "description": "CLI to grab GitHub Action `permissions`",
   "keywords": [
