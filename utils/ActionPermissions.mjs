@@ -85,7 +85,7 @@ const findActionPermissions = async (octokit, {owner, repo = null}) => {
   }
 
   try {
-    for await (const {data, headers} of octokit.paginate.iterator('GET /search/code', {
+    for await (const {data} of octokit.paginate.iterator('GET /search/code', {
       q,
       per_page: 100
     })) {
@@ -108,10 +108,8 @@ const findActionPermissions = async (octokit, {owner, repo = null}) => {
         })
       }
 
-      if (headers && headers.link && headers.link.includes('rel="next"')) {
-        // wait 20.5s to not hit the 30 requests per minute rate limit
-        await wait(20500)
-      }
+      // always wait 20.5s to not hit the 30 requests per minute rate limit
+      await wait(20500)
     }
 
     for await (const {repo: _repo, path} of workflows) {
@@ -225,7 +223,7 @@ class ActionPermissions {
             return true
           }
         },
-        onAbuseLimit: (retryAfter, options) => {
+        onAbuseLimit: (_retryAfter, options) => {
           console.warn(yellow(`Abuse detected for request ${options.method} ${options.url}`))
         }
       }
