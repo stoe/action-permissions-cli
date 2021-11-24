@@ -9,11 +9,7 @@
   "settings": {
     "terminal.integrated.shell.linux": "/bin/zsh"
   },
-  "extensions": [
-    "dbaeumer.vscode-eslint",
-    "editorconfig.editorconfig",
-    "esbenp.prettier-vscode"
-  ],
+  "extensions": ["dbaeumer.vscode-eslint", "editorconfig.editorconfig", "esbenp.prettier-vscode"],
   "remoteUser": "node",
   "postCreateCommand": "npm install && npm run build --if-present"
 }
