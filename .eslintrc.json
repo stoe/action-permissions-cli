@@ -11,6 +11,7 @@
   "extends": ["plugin:github/recommended"],
   "rules": {
     "camelcase": ["error", {"allow": ["per_page", "record_delimiter"]}],
-    "no-console": "off"
+    "no-console": "off",
+    "i18n-text/no-en": "off"
   }
 }
