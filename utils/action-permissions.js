@@ -1,14 +1,14 @@
-import stringify from 'csv-stringify/lib/sync.js'
-import chalk from 'chalk'
-import wait from './wait.js'
-
-import {writeFileSync} from 'fs'
-import {load} from 'js-yaml'
 import {Octokit} from '@octokit/core'
-import {throttling} from '@octokit/plugin-throttling'
+import chalk from 'chalk'
+import {load} from 'js-yaml'
 import {paginateRest} from '@octokit/plugin-paginate-rest'
+import {stringify} from 'csv-stringify'
+import {throttling} from '@octokit/plugin-throttling'
+// eslint-disable-next-line import/extensions
+import wait from './wait.js'
+import {writeFileSync} from 'fs'
 
-const {blue, dim, inverse, italic, red, yellow} = chalk
+const {blue, dim, inverse, red, yellow} = chalk
 const MyOctokit = Octokit.plugin(throttling, paginateRest)
 
 const ORG_QUERY = `query ($enterprise: String!, $cursor: String = null) {

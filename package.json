@@ -19,7 +19,7 @@
     "npm": ">=7"
   },
   "bin": {
-    "action-permissions-cli": "./index.mjs"
+    "action-permissions-cli": "./index.js"
   },
   "directories": {
     "lib": "utils"
@@ -30,7 +30,7 @@
     "license",
     "readme.md"
   ],
-  "exports": "./utils/ActionPermissions.mjs",
+  "exports": "./utils/action-permissions.js",
   "scripts": {
     "pretest": "npx eslint-config-prettier .eslintrc.json",
     "test": "eslint ."

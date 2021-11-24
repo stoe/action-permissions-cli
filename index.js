@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
+// eslint-disable-next-line import/extensions
+import ActionPermissions from './utils/action-permissions.js'
 import chalk from 'chalk'
 import meow from 'meow'
-import ActionPermissions from './utils/ActionPermissions.mjs'
 
 const {dim, blue, bold, red, yellow} = chalk
 const cli = meow(
