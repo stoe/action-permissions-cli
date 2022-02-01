@@ -109,8 +109,8 @@ const findActionPermissions = async (octokit, {owner, repo = null}) => {
         })
       }
 
-      // always wait 20.5s to not hit the 30 requests per minute rate limit
-      await wait(20500)
+      // always wait 3s to not hit the 30 requests per minute rate limit
+      await wait(3000)
     }
 
     for await (const {repo: _repo, path} of workflows) {
