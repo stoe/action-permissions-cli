@@ -12,6 +12,8 @@
   "rules": {
     "camelcase": ["error", {"allow": ["per_page", "record_delimiter"]}],
     "no-console": "off",
-    "i18n-text/no-en": "off"
+    "i18n-text/no-en": "off",
+    "import/extensions": "off",
+    "import/no-unresolved": "off"
   }
 }
