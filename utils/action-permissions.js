@@ -86,12 +86,20 @@ const findActionPermissions = async (octokit, {owner, repo = null}) => {
   }
 
   try {
-    for await (const {data} of octokit.paginate.iterator('GET /search/code', {
-      q,
-      per_page: 100
-    })) {
+    // start an infinit loop with brak condition to page through search results while throtteling the requests
+    let i = 1
+    for (;;) {
+      const {data, headers} = await octokit.request('GET /search/code', {q, per_page: 100, page: i})
+
+      // stop the loop if there are no results
+      if (data.total_count === 0) {
+        break
+      }
+
+      const limitRemaining = parseInt(headers['x-ratelimit-remaining'], 10)
+
       if (data.total_count > 0) {
-        data.map(item => {
+        data.items.map(item => {
           const {
             name,
             path,
@@ -109,8 +117,25 @@ const findActionPermissions = async (octokit, {owner, repo = null}) => {
         })
       }
 
-      // always wait 3s to not hit the 30 requests per minute rate limit
-      await wait(3000)
+      // slow down if there is no more rate limit remaining
+      if (limitRemaining < 5) {
+        const limitRest = parseInt(headers['x-ratelimit-reset'], 10)
+        const resetAt = new Date(limitRest * 1000)
+        const resetDiff = resetAt.getTime() - Date.now()
+
+        console.warn(`sleeping ${resetDiff / 1000}s until`, resetAt)
+        await wait(resetDiff)
+      }
+
+      // break if we got all results
+      if (data.total_count === workflows.length) {
+        break
+      }
+
+      // wait 2.5s to not hit {rate,secondary} limit
+      await wait(2500)
+
+      i++
     }
 
     for await (const {repo: _repo, path} of workflows) {
@@ -119,8 +144,6 @@ const findActionPermissions = async (octokit, {owner, repo = null}) => {
         repo: _repo,
         path
       })
-
-      // console.log(wf)
 
       if (wf.content) {
         const buff = Buffer.from(wf.content, 'base64')
@@ -253,6 +276,9 @@ ${dim('(this could take a while...)')}
 
         const res = await findActionPermissions(octokit, {owner: org})
         actions.push(...res)
+
+        // wait 5s between every org
+        await wait(5000)
       }
     }
 
