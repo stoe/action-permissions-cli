@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-// eslint-disable-next-line import/extensions
 import ActionPermissions from './utils/action-permissions.js'
 import chalk from 'chalk'
 import meow from 'meow'
