@@ -284,7 +284,6 @@ class ActionPermissions {
         onRateLimit: (retryAfter, options) => {
           console.warn(yellow(`Request quota exhausted for request ${options.method} ${options.url}`))
           console.warn(yellow(`Retrying after ${retryAfter} seconds!`))
-          console.debug(retryAfter, options)
           return true
         },
         onAbuseLimit: (_retryAfter, options) => {
