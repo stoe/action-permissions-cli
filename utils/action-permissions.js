@@ -4,6 +4,7 @@ import {load} from 'js-yaml'
 import {paginateRest} from '@octokit/plugin-paginate-rest'
 import {stringify} from 'csv-stringify/sync'
 import {throttling} from '@octokit/plugin-throttling'
+import wait from './wait.js'
 import {writeFileSync} from 'fs'
 
 const {blue, dim, inverse, red, yellow} = chalk
@@ -345,6 +346,10 @@ ${dim('(this could take a while...)')}
       const res = await findActionPermissions(octokit, {owner: org, repo})
 
       actions.push(...res)
+
+      // wait 2.5s between repositories to help spread out the requests
+      wait(2500)
+
       i++
     }
 
