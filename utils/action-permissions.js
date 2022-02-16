@@ -24,14 +24,62 @@ const ORG_QUERY = `query ($enterprise: String!, $cursor: String = null) {
   }
 }`
 
+const ORG_REPO_QUERY = `query ($owner: String!, $cursor: String = null) {
+  organization(login: $owner) {
+    repositories(
+      affiliations: OWNER
+      isFork: false
+      orderBy: { field: PUSHED_AT, direction: DESC }
+      first: 100
+      after: $cursor
+    ) {
+      nodes {
+        name
+        owner {
+          login
+        }
+        isArchived
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+}`
+
+const USER_REPO_QUERY = `query ($owner: String!, $cursor: String = null) {
+  user(login: $owner) {
+    repositories(
+      affiliations: OWNER
+      isFork: false
+      orderBy: { field: PUSHED_AT, direction: DESC }
+      first: 100
+      after: $cursor
+    ) {
+      nodes {
+        name
+        owner {
+          login
+        }
+        isArchived
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+}`
+
 /**
  * @async
  * @private
  * @function getOrganizations
  *
  * @param {import('@octokit/core').Octokit} octokit
- * @param {String} enterprise
- * @param {String} [cursor=null]
+ * @param {string} enterprise
+ * @param {string} [cursor=null]
  * @param {Organization[]} [records=[]]
  *
  * @returns {Organization[]}
@@ -60,106 +108,102 @@ const getOrganizations = async (octokit, enterprise, cursor = null, records = []
 /**
  * @async
  * @private
+ * @function getRepositories
+ *
+ * @param {import('@octokit/core').Octokit} octokit
+ * @param {Organization} owner
+ * @param {string} [type='organization']
+ * @param {string} [cursor=null]
+ * @param {Repository[]} [records=[]]
+ *
+ * @returns {Repository[]}
+ */
+const getRepositories = async (octokit, owner, type = 'organization', cursor = null, records = []) => {
+  let nodes = []
+  let pageInfo = {
+    hasNextPage: false,
+    endCursor: null
+  }
+
+  if (type === 'organization') {
+    const {
+      organization: {repositories}
+    } = await octokit.graphql(ORG_REPO_QUERY, {owner, cursor})
+
+    nodes = repositories.nodes
+    pageInfo = repositories.pageInfo
+  } else if (type === 'user') {
+    const {
+      user: {repositories}
+    } = await octokit.graphql(USER_REPO_QUERY, {owner, cursor})
+
+    nodes = repositories.nodes
+    pageInfo = repositories.pageInfo
+  }
+
+  nodes.map(data => {
+    // skip if repository is archived
+    if (data.isArchived) return
+
+    if (data.owner.login === owner) {
+      /** @type Repository */
+      records.push({
+        owner: data.owner.login,
+        repo: data.name
+      })
+    }
+  })
+
+  if (pageInfo.hasNextPage) {
+    await getRepositories(octokit, owner, type, pageInfo.endCursor, records)
+  }
+
+  return records
+}
+
+/**
+ * @async
+ * @private
  * @function findActionsUsed
  *
  * @param {import('@octokit/core').Octokit} octokit
  * @param {object} options
  * @param {string} options.owner
- * @param {string} [options.repo=null]
+ * @param {string} options.repo
  *
  * @returns {Action[]}
  */
-const findActionPermissions = async (octokit, {owner, repo = null}) => {
-  const workflows = []
-
+const findActionPermissions = async (octokit, {owner, repo}) => {
   /** @type Action[] */
   const actions = []
 
-  let q = `GITHUB_TOKEN in:file path:.github/workflows extension:yml language:yaml`
-
-  if (repo !== null) {
-    q += ` repo:${owner}/${repo}`
-  } else {
-    q += ` user:${owner}`
-  }
-
   try {
-    // start an infinit loop with brak condition to page through search results while throtteling the requests
-    let i = 1
-    for (;;) {
-      const {data, headers} = await octokit.request('GET /search/code', {q, per_page: 100, page: i})
+    const {data} = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+      owner,
+      repo,
+      path: '.github/workflows'
+    })
 
-      // stop the loop if there are no results
-      if (data.total_count === 0) {
-        break
-      }
-
-      const limitRemaining = parseInt(headers['x-ratelimit-remaining'], 10)
-
-      if (data.total_count > 0) {
-        data.items.map(item => {
-          const {
-            name,
-            path,
-            repository: {name: r},
-            sha
-          } = item
-
-          workflows.push({
-            owner,
-            repo: r,
-            name,
-            path,
-            sha
-          })
-        })
-      }
-
-      // slow down if there is no more rate limit remaining
-      if (limitRemaining < 5) {
-        const limitRest = parseInt(headers['x-ratelimit-reset'], 10)
-        const resetAt = new Date(limitRest * 1000)
-        const resetDiff = resetAt.getTime() - Date.now()
-
-        console.warn(`sleeping ${resetDiff / 1000}s until`, resetAt)
-        await wait(resetDiff)
-      }
-
-      // break if we got all results
-      if (data.total_count === workflows.length) {
-        break
-      }
-
-      // wait 2.5s to not hit {rate,secondary} limit
-      await wait(2500)
-
-      i++
-    }
-
-    for await (const {repo: _repo, path} of workflows) {
-      const {data: wf} = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+    for await (const wf of data) {
+      const {
+        data: {content}
+      } = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
         owner,
-        repo: _repo,
-        path
+        repo,
+        path: wf.path
       })
 
-      if (wf.content) {
-        const buff = Buffer.from(wf.content, 'base64')
-        const content = buff.toString('utf-8')
-        const yaml = load(content, 'utf8')
+      if (content) {
+        const _buff = Buffer.from(content, 'base64')
+        const _content = _buff.toString('utf-8')
+        const yaml = load(_content, 'utf8')
         const permissions = recursiveSearch(yaml, 'permissions')
 
-        actions.push({owner, repo: _repo, workflow: path, permissions})
+        actions.push({owner, repo, workflow: wf.path, permissions})
       }
     }
   } catch (error) {
-    if (error.status === 401) {
-      throw new Error('Bad credentials')
-    }
-
-    console.warn(
-      `${owner} cannot be searched either because the resources do not exist or you do not have permission to view them`
-    )
+    // do nothing
   }
 
   return actions.sort(sortActions)
@@ -263,31 +307,46 @@ Gathering GitHub Action ${inverse('permissions')} strings for ${blue(enterprise 
 ${dim('(this could take a while...)')}
 `)
 
-    let actions = []
+    const actions = []
+    let repos = []
 
     if (enterprise) {
       const orgs = await getOrganizations(octokit, enterprise)
-      console.log(`${dim(`searching in %s organizations`)}`, orgs.length)
+      console.log(`${dim(`searching in %s enterprise organizations\n[%s]`)}`, orgs.length, orgs.join(', '))
 
       for await (const org of orgs) {
-        console.log(`searching actions for ${org}`)
-
-        const res = await findActionPermissions(octokit, {owner: org})
-        actions.push(...res)
-
-        // wait 5s between every org
-        await wait(5000)
+        const res = await getRepositories(octokit, org)
+        repos.push(...res)
       }
     }
 
     if (owner) {
-      actions = await findActionPermissions(octokit, {owner})
+      const {
+        data: {type}
+      } = await octokit.request('GET /users/{owner}', {
+        owner
+      })
+
+      console.log(`${dim(`searching %s %s`)}`, type.toLowerCase(), owner)
+      repos = await getRepositories(octokit, owner, type.toLowerCase())
     }
 
     if (repository) {
-      const [repoOwner, repo] = repository.split('/')
+      const [_o, _r] = repository.split('/')
 
-      actions = await findActionPermissions(octokit, {owner: repoOwner, repo})
+      console.log(`${dim(`searching %s/%s`)}`, _o, _r)
+      repos.push({owner: _o, repo: _r})
+    }
+
+    let i = 0
+    for await (const {owner: org, repo} of repos) {
+      const ul = i === repos.length - 1 ? '└─' : '├─'
+
+      console.log(`  ${ul} ${org}/${repo}`)
+      const res = await findActionPermissions(octokit, {owner: org, repo})
+
+      actions.push(...res)
+      i++
     }
 
     return actions
@@ -360,6 +419,13 @@ ${dim('(this could take a while...)')}
 /**
  * @typedef {object} Organization
  * @property {string} login
+ * @readonly
+ */
+
+/**
+ * @typedef {object} Repository
+ * @property {string} owner
+ * @property {string} repo
  * @readonly
  */
 
