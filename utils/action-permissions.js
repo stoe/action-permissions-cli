@@ -346,6 +346,10 @@ ${dim('(this could take a while...)')}
       const res = await findActionPermissions(octokit, {owner: org, repo})
 
       actions.push(...res)
+
+      // wait 2.5s between repositories to help spread out the requests
+      wait(2500)
+
       i++
     }
 
