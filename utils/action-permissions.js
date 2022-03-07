@@ -286,8 +286,10 @@ class ActionPermissions {
           console.warn(yellow(`Retrying after ${retryAfter} seconds!`))
           return true
         },
-        onAbuseLimit: (_retryAfter, options) => {
-          console.warn(yellow(`Abuse detected for request ${options.method} ${options.url}`))
+        onSecondaryRateLimit: (retryAfter, options) => {
+          console.warn(red(`Secondary rate limit hit detected for request ${options.method} ${options.url}`))
+          console.warn(yellow(`Retrying after ${retryAfter} seconds!`))
+          return true
         }
       }
     })
